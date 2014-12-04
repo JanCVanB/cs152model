@@ -37,6 +37,9 @@ class Network:
         response, where the response is the user input at the source Node
         """
         for source, destination in product(self.nodes, self.nodes):
+            # Do not link a node to itself
+            if source == destination:
+                continue
             for response in range(self.interactivity):
                 # Skip some pairs, according to ``self.density``
                 if random() > self.density:

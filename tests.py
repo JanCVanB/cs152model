@@ -1,6 +1,7 @@
 from curator import Curator
 from database import Network
 from matplotlib import pyplot
+import random
 
 
 def test_model():
@@ -68,6 +69,16 @@ def test_model():
     link_axes.legend()
     sequence_axes.legend()
     pyplot.show()
+
+
+def test_query():
+    curator = Curator()
+    curator.database = Network()
+    links = [link for node1 in curator.database.nodes for node2 in node1.links for link in node1.links[node2].values()]
+    for link in links:
+        print link
+    for _ in range(10):
+        print curator.query(10, {node: random.randint(0, 1) for node in curator.database.nodes})
 
 
 if __name__ == '__main__':
