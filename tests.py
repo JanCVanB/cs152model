@@ -1,10 +1,16 @@
+from adversary import Adversary
 from curator import Curator
 from database import Network
 from matplotlib import pyplot
-import random
 
 
-def test_model():
+def test_adversary():
+    adversary = Adversary()
+    curator = Curator()
+    curator.network = Network()
+
+
+def test_network():
     epsilons = [100]
     fractions_of_links_defined = [0.2, 0.4, 0.6, 0.8]
     numbers_of_nodes = [10]
@@ -44,15 +50,16 @@ def test_model():
         utility_skew_power = variable if utility_skew_powers == variables else utility_skew_powers[0]
 
         for repeat_run_number in range(number_of_repeat_runs):
-            network = Network(size=number_of_nodes,
-                              density=fraction_of_links_defined,
-                              interactivity=number_of_responses,
-                              skew_power=utility_skew_power)
+            curator = Curator()
+            curator.network = Network(size=number_of_nodes,
+                                      density=fraction_of_links_defined,
+                                      interactivity=number_of_responses,
+                                      skew_power=utility_skew_power)
             preferences = network.make_random_preferences()
             print('%d Nodes, %d Responses, Sequences of %d, Density=%.3g, Epsilon=%.3g, Skew=%.3g, Run %d' %
                   (number_of_nodes, number_of_responses, sequence_length, fraction_of_links_defined, epsilon, utility_skew_power, repeat_run_number))
             sequence_probabilities = sorted([probability for probability in
-                                             Curator.sequence_probabilities(network.nodes, preferences, epsilon, sequence_length)
+                                             network.sequence_probabilities(preferences, sequence_length, curator.exponential_mechanism)
                                              if probability > 10 ** (- sequence_length)], reverse=True)
             link_utilities = sorted([link.utility for node in network.nodes for links in node.links.values() for link in links.values()], reverse=True)
             assert all(probability for probability in sequence_probabilities)
@@ -71,15 +78,5 @@ def test_model():
     pyplot.show()
 
 
-def test_query():
-    curator = Curator()
-    curator.database = Network()
-    links = [link for node1 in curator.database.nodes for node2 in node1.links for link in node1.links[node2].values()]
-    for link in links:
-        print link
-    for _ in range(10):
-        print curator.query(10, {node: random.randint(0, 1) for node in curator.database.nodes})
-
-
 if __name__ == '__main__':
-    test_model()
+    test_adversary()

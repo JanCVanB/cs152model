@@ -60,6 +60,40 @@ class Network:
         """
         return [random.randint(0, self.interactivity - 1) for _ in self.nodes]
 
+    def sequence_probabilities(self, preferences, sequence_length, probability_conversion):
+        """Return a list of probabilities for every possible sequence
+
+        :return: list of probabilities for every possible sequence
+        :rtype: list
+        """
+        sequences = list(product(self.nodes, repeat=sequence_length))
+        sequence_probabilities = [1.0 / len(self.nodes)] * len(sequences)
+        progress_bar_size = 50
+        progress_step = 2
+        print '|' + ' ' * progress_bar_size + '|',
+        for sequence_index in range(len(sequences)):
+            if not sequence_index % (len(sequences) * progress_step / 100) and sequence_index:
+                progress_percent = int(100 * sequence_index / len(sequences))
+                print('\r|' + '-' * (progress_percent * progress_bar_size / 100) +
+                      ' ' * ((100 - progress_percent) * progress_bar_size / 100) + '|'),
+            for sequence_step in range(sequence_length - 1):
+                this_node = sequences[sequence_index][sequence_step]
+                next_node = sequences[sequence_index][sequence_step + 1]
+                response = preferences[self.nodes.index(this_node)]
+                utilities = []
+                for other_node in self.nodes:
+                    try:
+                        utilities.append(this_node.links[other_node][response].utility)
+                    except KeyError:
+                        utilities.append(0)
+                probabilities = probability_conversion(utilities)
+                step_probability = probabilities[self.nodes.index(next_node)]
+                sequence_probabilities[sequence_index] *= step_probability
+        print '\r|' + '-' * progress_bar_size + '|'
+        assert sum(sequence_probabilities) < 1.0001
+        assert sum(sequence_probabilities) > 0.9999
+        return sequence_probabilities
+
 
 class Link:
     """Link in a Network, connecting two source and destination Nodes
