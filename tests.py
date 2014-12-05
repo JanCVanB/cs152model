@@ -36,11 +36,11 @@ def test_adversary():
                                                                                   curator.exponential_mechanism),
                                            reverse=True)
             for cutoff_fraction in cutoff_fractions:
-                cutoff_sequence = int(cutoff_fraction * len(curator_probabilities))
-                adversary_subset = adversary_probabilities[:cutoff_sequence]
-                curator_subset = curator_probabilities[:cutoff_sequence]
+                cutoff_number = int(cutoff_fraction * len(curator_probabilities))
+                adversary_subset = adversary_probabilities[:cutoff_number]
+                curator_subset = curator_probabilities[:cutoff_number]
                 error_count = sum(x not in adversary_subset for x in curator_subset)
-                errors[cutoff_fraction][preference].append(1.0 * error_count / cutoff_sequence)
+                errors[cutoff_fraction][preference].append(1.0 * error_count / cutoff_number)
 
     print errors
     for cutoff_fraction in cutoff_fractions:
