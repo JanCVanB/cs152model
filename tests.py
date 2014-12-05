@@ -2,6 +2,7 @@ from adversary import Adversary
 from curator import Curator
 from database import Network
 from matplotlib import pyplot
+import numpy as np
 
 
 def test_adversary():
@@ -15,6 +16,7 @@ def test_adversary():
     cutoff_fractions = (0.5,)
     preference_count = 1
     query_counts = (1e3, 1e4, 1e5)
+    KL_divergences = []
 
     curator = Curator()
     curator.network = Network(size=size, interactivity=interactivity)
@@ -41,6 +43,10 @@ def test_adversary():
                 curator_subset = curator_probabilities[:cutoff_number]
                 error_count = sum(x not in adversary_subset for x in curator_subset)
                 errors[cutoff_fraction][preference].append(1.0 * error_count / cutoff_number)
+
+        # Current KL Divergence after a query
+        current_KL = KL_divergence(np.asarray(curator_probabilities), np.asarray(adversary_probabilities))
+        KL_divergences.append(current_KL)
 
     print errors
     for cutoff_fraction in cutoff_fractions:
@@ -117,7 +123,11 @@ def test_network():
     sequence_axes.legend()
     pyplot.show()
 
+def KL_divergence(distribution, approx_distribution):
+    '''Calculates the KL divergence for two distributions'''
+    return np.sum(distribution * np.log(distribution / approx_distribution))
+
 
 if __name__ == '__main__':
     test_adversary()
-    # test_network()
+    test_network()
