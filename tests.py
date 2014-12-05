@@ -25,7 +25,7 @@ def test_adversary():
     errors = {cutoff_fraction: {preference: [] for preference in preferences}
               for cutoff_fraction in cutoff_fractions}
     for query_count in query_counts:
-        adversary.pirate(sequence_length, int(query_count))
+        adversary.pirate(sequence_length, number_of_queries=int(query_count))
         for preference in preferences:
             adversary_probabilities = sorted(adversary.network.sequence_probabilities(preference,
                                                                                       sequence_length,
