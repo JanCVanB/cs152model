@@ -1,5 +1,5 @@
 from itertools import product
-from random import random
+import random
 
 
 class Network:
@@ -42,10 +42,10 @@ class Network:
                 continue
             for response in range(self.interactivity):
                 # Skip some pairs, according to ``self.density``
-                if random() > self.density:
+                if random.random() > self.density:
                     continue
                 # Draw utility from x^skew_power on (0, 1)
-                utility = random() ** self.skew_power
+                utility = random.random() ** self.skew_power
                 link = Link(source, destination, response, utility)
                 try:
                     source.links[destination][response] = link
