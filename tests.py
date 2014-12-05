@@ -5,14 +5,19 @@ from matplotlib import pyplot
 
 
 def test_adversary():
+
+    # Network parameters
+    size = 10
+    interactivity = 2
+    sequence_length = 4
+
+    # Testing parameters
     cutoff_fractions = (0.5,)
     preference_count = 1
     query_counts = (1e3, 1e4, 1e5)
-    sequence_length = 4
-    interactivity = 2
 
     curator = Curator()
-    curator.network = Network(interactivity=interactivity)
+    curator.network = Network(size=size, interactivity=interactivity)
     curator.network.make_random_links()
     adversary = Adversary(curator)
     preferences = tuple(curator.network.get_random_preferences() for _ in range(preference_count))
