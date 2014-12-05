@@ -17,7 +17,8 @@ class Adversary:
     def __init__(self, curator, eta=1e-4):
         self.curator = curator
         self.eta = eta
-        self.network = Network(size=self.curator.network.size)
+        self.network = Network(size=self.curator.network.size,
+                               interactivity=self.curator.network.interactivity)
         self.network.make_all_links()
         self.preference_combinations = self.network.get_all_preferences()
         self.preference_index = 0
