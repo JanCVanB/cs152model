@@ -5,9 +5,42 @@ from matplotlib import pyplot
 
 
 def test_adversary():
+    cutoff_fractions = (0.1, 0.5)
+    preference_count = 5
+    query_counts = (1, 10, 100, 1000)
+    sequence_length = 4
+
     adversary = Adversary()
     curator = Curator()
     curator.network = Network()
+    curator.network.make_random_links()
+    preferences = tuple(curator.network.get_random_preferences() for _ in range(preference_count))
+
+    errors = {cutoff_fraction: {preference: [] for preference in preferences}
+              for cutoff_fraction in cutoff_fractions}
+    for query_count in query_counts:
+        adversary.pirate(curator, query_count)
+        for preference in preferences:
+            adversary_probabilities = sorted(adversary.network.sequence_probabilities(preferences,
+                                                                                      sequence_length,
+                                                                                      Adversary.normalize),
+                                             reverse=True)
+            curator_probabilities = sorted(curator.network.sequence_probabilities(preferences,
+                                                                                  sequence_length,
+                                                                                  curator.exponential_mechanism),
+                                           reverse=True)
+            for cutoff_fraction in cutoff_fractions:
+                cutoff_sequence = cutoff_fraction * len(curator_probabilities)
+                adversary_subset = adversary_probabilities[:cutoff_sequence]
+                curator_subset = curator_probabilities[:cutoff_sequence]
+                error_count = sum(x not in adversary_subset for x in curator_subset)
+                errors[cutoff_fraction][preference] = error_count / cutoff_sequence
+
+    for cutoff_fraction in cutoff_fractions:
+        for preference in preferences:
+            pyplot.plot(range(len(errors[cutoff_fraction][preference])),
+                        errors[cutoff_fraction][preference])
+    pyplot.show()
 
 
 def test_network():
@@ -55,13 +88,13 @@ def test_network():
                                       density=fraction_of_links_defined,
                                       interactivity=number_of_responses,
                                       skew_power=utility_skew_power)
-            preferences = network.make_random_preferences()
+            preferences = curator.network.get_random_preferences()
             print('%d Nodes, %d Responses, Sequences of %d, Density=%.3g, Epsilon=%.3g, Skew=%.3g, Run %d' %
                   (number_of_nodes, number_of_responses, sequence_length, fraction_of_links_defined, epsilon, utility_skew_power, repeat_run_number))
             sequence_probabilities = sorted([probability for probability in
-                                             network.sequence_probabilities(preferences, sequence_length, curator.exponential_mechanism)
+                                             curator.network.sequence_probabilities(preferences, sequence_length, curator.exponential_mechanism)
                                              if probability > 10 ** (- sequence_length)], reverse=True)
-            link_utilities = sorted([link.utility for node in network.nodes for links in node.links.values() for link in links.values()], reverse=True)
+            link_utilities = sorted([link.utility for node in curator.network.nodes for links in node.links.values() for link in links.values()], reverse=True)
             assert all(probability for probability in sequence_probabilities)
 
             label = str(variable) + ' ' + variable_name
@@ -80,3 +113,4 @@ def test_network():
 
 if __name__ == '__main__':
     test_adversary()
+    test_network()
