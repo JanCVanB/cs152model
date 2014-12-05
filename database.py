@@ -23,19 +23,30 @@ class Network:
         """
         self.nodes = [Node(name='Node' + str(n + 1)) for n in range(self.size)]
 
+    def make_all_links(self):
+        """Make 1-utility Links for all pairs of different nodes in self.nodes
+
+        Links are defined for a specific combination of source, destination, and
+        response, where the response is the user input at the source Node.
+        """
+        for source, destination in product(self.nodes, self.nodes):
+            for response in range(self.interactivity):
+                link = Link(source, destination, response, utility=1)
+                try:
+                    source.links[destination][response] = link
+                except KeyError:
+                    source.links[destination] = {response: link}
+
     def make_random_links(self, density=0.1, skew_power=1):
         """Make random-utility Links for ``density`` fraction of self.nodes
 
         Links are defined for a specific combination of source, destination, and
-        response, where the response is the user input at the source Node
+        response, where the response is the user input at the source Node.
 
         :param float density: fraction of defined Links over all Links
         :param float skew_power: Link utility distribution power (u~x^SP on (0, 1))
         """
         for source, destination in product(self.nodes, self.nodes):
-            # Do not link a node to itself
-            if source == destination:
-                continue
             for response in range(self.interactivity):
                 # Skip some pairs, according to ``density``
                 if random.random() > density:
@@ -55,7 +66,6 @@ class Network:
         :rtype: tuple
         """
         return tuple(sequence for sequence in product(range(self.interactivity), repeat=self.size))
-
 
     def get_random_preferences(self):
         """Return a random tuple of user input preferences, one for each node
@@ -84,11 +94,11 @@ class Network:
             for sequence_step in range(sequence_length - 1):
                 this_node = sequences[sequence_index][sequence_step]
                 next_node = sequences[sequence_index][sequence_step + 1]
-                response = preferences[self.nodes.index(this_node)]
+                preference = preferences[self.nodes.index(this_node)]
                 utilities = []
                 for other_node in self.nodes:
                     try:
-                        utilities.append(this_node.links[other_node][response].utility)
+                        utilities.append(this_node.links[other_node][preference].utility)
                     except KeyError:
                         utilities.append(0)
                 probabilities = probability_conversion(utilities)
@@ -105,27 +115,27 @@ class Link:
 
     :param source: source Node
     :param destination: destination Node
-    :param int response: user input at source Node
+    :param int preference: user input at source Node
     :param float utility: utility of use
     :ivar source: source Node
     :ivar destination: destination Node
-    :ivar int response: user input at source Node
+    :ivar int preference: user input at source Node
     :ivar float utility: utility of use
     """
 
-    def __init__(self, source, destination, response, utility):
+    def __init__(self, source, destination, preference, utility):
         self.source = source
         self.destination = destination
-        self.response = response
+        self.preference = preference
         self.utility = utility
 
     def __repr__(self):
         return ('Link ' + str(self.source) + ' to ' + str(self.destination) +
-                ' \t if %d \t utility %.3g' % (self.response, self.utility))
+                ' \t if %d \t utility %.3g' % (self.preference, self.utility))
 
     def __str__(self):
         return ('Link ' + str(self.source) + ' to ' + str(self.destination) +
-                ' \t if %d \t utility %.3g' % (self.response, self.utility))
+                ' \t if %d \t utility %.3g' % (self.preference, self.utility))
 
 
 class Node:

@@ -24,7 +24,7 @@ class Curator:
         weights = numpy.exp(0.5 * self.epsilon * numpy.array(utilities))
         return list(weights / sum(weights))
 
-    def query(self, length, preferences):
+    def query(self, sequence_length, preferences):
         """Return a list of nodes picked with the exponential mechanism
 
         Each step in this sequence is picked by running the exponential
@@ -34,17 +34,20 @@ class Curator:
 
         The first node is always the first node in self.network.nodes.
 
+        :param int sequence_length: length of sequence to query
+        :param tuple preferences: user input at each node in self.network.nodes
         :return: list of nodes picked with the exponential mechanism
         :rtype: list
         """
-        sequence = [self.network.nodes[0]]
-        for sequence_step in range(length - 1):
+        sequence = [random.choice(self.network.nodes)]
+        for sequence_step in range(sequence_length - 1):
             this_node = sequence[-1]
+            this_index = self.network.nodes.index(this_node)
             utilities = [0 if (node not in this_node.links
-                               or preferences[this_node] not in this_node.links[node])
-                         else this_node.links[node][preferences[this_node]].utility
+                               or preferences[this_index] not in this_node.links[node])
+                         else this_node.links[node][preferences[this_index]].utility
                          for node in self.network.nodes]
-            probabilities = Curator.exponential_mechanism(self.epsilon, utilities)
+            probabilities = self.exponential_mechanism(utilities)
             shuffled_probabilities = probabilities[:]
             random.shuffle(shuffled_probabilities)
             next_probability = numpy.random.choice(shuffled_probabilities, p=shuffled_probabilities)
@@ -53,4 +56,4 @@ class Curator:
             next_node_index = random.choice(next_probability_indices)
             next_node = self.network.nodes[next_node_index]
             sequence.append(next_node)
-        return sequence
+        return [node.name for node in sequence]

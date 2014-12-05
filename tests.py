@@ -5,41 +5,45 @@ from matplotlib import pyplot
 
 
 def test_adversary():
-    cutoff_fractions = (0.1, 0.5)
-    preference_count = 5
-    query_counts = (1, 10, 100, 1000)
+    cutoff_fractions = (0.5,)
+    preference_count = 1
+    query_counts = (1000, 10000, 100000)
     sequence_length = 4
 
-    adversary = Adversary()
     curator = Curator()
     curator.network = Network()
     curator.network.make_random_links()
+    adversary = Adversary(curator)
+    adversary.network.make_all_links()
     preferences = tuple(curator.network.get_random_preferences() for _ in range(preference_count))
 
     errors = {cutoff_fraction: {preference: [] for preference in preferences}
               for cutoff_fraction in cutoff_fractions}
     for query_count in query_counts:
-        adversary.pirate(curator, query_count)
+        adversary.pirate(sequence_length, query_count)
         for preference in preferences:
-            adversary_probabilities = sorted(adversary.network.sequence_probabilities(preferences,
+            adversary_probabilities = sorted(adversary.network.sequence_probabilities(preference,
                                                                                       sequence_length,
                                                                                       Adversary.normalize),
                                              reverse=True)
-            curator_probabilities = sorted(curator.network.sequence_probabilities(preferences,
+            curator_probabilities = sorted(curator.network.sequence_probabilities(preference,
                                                                                   sequence_length,
                                                                                   curator.exponential_mechanism),
                                            reverse=True)
             for cutoff_fraction in cutoff_fractions:
-                cutoff_sequence = cutoff_fraction * len(curator_probabilities)
+                cutoff_sequence = int(cutoff_fraction * len(curator_probabilities))
                 adversary_subset = adversary_probabilities[:cutoff_sequence]
                 curator_subset = curator_probabilities[:cutoff_sequence]
                 error_count = sum(x not in adversary_subset for x in curator_subset)
-                errors[cutoff_fraction][preference] = error_count / cutoff_sequence
+                errors[cutoff_fraction][preference].append(1.0 * error_count / cutoff_sequence)
 
+    print errors
     for cutoff_fraction in cutoff_fractions:
         for preference in preferences:
             pyplot.plot(range(len(errors[cutoff_fraction][preference])),
-                        errors[cutoff_fraction][preference])
+                        errors[cutoff_fraction][preference],
+                        label=str(cutoff_fraction) + ' ' + str(preference))
+    pyplot.legend()
     pyplot.show()
 
 
@@ -110,5 +114,5 @@ def test_network():
 
 
 if __name__ == '__main__':
-    # test_adversary()
-    test_network()
+    test_adversary()
+    # test_network()
