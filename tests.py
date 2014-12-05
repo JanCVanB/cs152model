@@ -48,7 +48,7 @@ def test_model():
                               density=fraction_of_links_defined,
                               interactivity=number_of_responses,
                               skew_power=utility_skew_power)
-            preferences = Curator.make_random_preferences(network)
+            preferences = network.make_random_preferences()
             print('%d Nodes, %d Responses, Sequences of %d, Density=%.3g, Epsilon=%.3g, Skew=%.3g, Run %d' %
                   (number_of_nodes, number_of_responses, sequence_length, fraction_of_links_defined, epsilon, utility_skew_power, repeat_run_number))
             sequence_probabilities = sorted([probability for probability in
