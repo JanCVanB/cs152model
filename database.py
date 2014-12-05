@@ -48,13 +48,22 @@ class Network:
                 except KeyError:
                     source.links[destination] = {response: link}
 
-    def make_random_preferences(self):
-        """Return a random dictionary of user input preferences, keyed by nodes
+    def get_all_preferences(self):
+        """Return a list of all possible lists of input preferences.
 
-        :return: random dictionary of user input preferences, keyed by nodes
-        :rtype: dict
+        :return: list of all input preferences
+        :rtype: list
         """
-        return [random.randint(0, self.interactivity - 1) for _ in self.nodes]
+        return tuple(sequence for sequence in product(range(self.interactivity), repeat=self.size))
+
+
+    def get_random_preferences(self):
+        """Return a random list of user input preferences, keyed by nodes
+
+        :return: random list of user input preferences, keyed by nodes
+        :rtype: list
+        """
+        return tuple(random.choice(range(self.interactivity)) for _ in self.nodes)
 
     def sequence_probabilities(self, preferences, sequence_length, probability_conversion):
         """Return a list of probabilities for every possible sequence
