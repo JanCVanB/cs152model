@@ -49,19 +49,19 @@ class Network:
                     source.links[destination] = {response: link}
 
     def get_all_preferences(self):
-        """Return a list of all possible lists of input preferences.
+        """Return a tuple of all possible tuples of input preferences.
 
-        :return: list of all input preferences
-        :rtype: list
+        :return: tuple of all input preferences
+        :rtype: tuple
         """
         return tuple(sequence for sequence in product(range(self.interactivity), repeat=self.size))
 
 
     def get_random_preferences(self):
-        """Return a random list of user input preferences, keyed by nodes
+        """Return a random tuple of user input preferences, one for each node
 
-        :return: random list of user input preferences, keyed by nodes
-        :rtype: list
+        :return: random tuple of user input preferences
+        :rtype: tuple
         """
         return tuple(random.choice(range(self.interactivity)) for _ in self.nodes)
 
