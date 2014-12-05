@@ -84,10 +84,8 @@ def test_network():
 
         for repeat_run_number in range(number_of_repeat_runs):
             curator = Curator()
-            curator.network = Network(size=number_of_nodes,
-                                      density=fraction_of_links_defined,
-                                      interactivity=number_of_responses,
-                                      skew_power=utility_skew_power)
+            curator.network = Network(size=number_of_nodes, interactivity=number_of_responses)
+            curator.network.make_random_links(density=fraction_of_links_defined, skew_power=utility_skew_power)
             preferences = curator.network.get_random_preferences()
             print('%d Nodes, %d Responses, Sequences of %d, Density=%.3g, Epsilon=%.3g, Skew=%.3g, Run %d' %
                   (number_of_nodes, number_of_responses, sequence_length, fraction_of_links_defined, epsilon, utility_skew_power, repeat_run_number))
