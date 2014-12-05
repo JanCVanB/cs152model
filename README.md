@@ -1,6 +1,8 @@
 cs152model
 ==========
 
+Authors: Jan Van Bruggen, Cutter Coryell, James Chang
+
 Model for the privacy of streamed content with respect to complexity,
 interactivity, and noisiness
 
