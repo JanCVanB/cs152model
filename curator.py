@@ -25,15 +25,6 @@ class Curator:
         weights = numpy.exp(0.5 * epsilon * numpy.array(utilities))
         return list(weights / sum(weights))
 
-    @staticmethod
-    def make_random_preferences(network):
-        """Return a random dictionary of user input preferences, keyed by nodes
-
-        :return: random dictionary of user input preferences, keyed by nodes
-        :rtype: dict
-        """
-        return [random.randint(0, 1) for _ in network.nodes]
-
     def query(self, length, preferences):
         """Return a list of nodes picked with the exponential mechanism
 

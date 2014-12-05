@@ -52,6 +52,14 @@ class Network:
                 except KeyError:
                     source.links[destination] = {response: link}
 
+    def make_random_preferences(self):
+        """Return a random dictionary of user input preferences, keyed by nodes
+
+        :return: random dictionary of user input preferences, keyed by nodes
+        :rtype: dict
+        """
+        return [random.randint(0, self.interactivity - 1) for _ in self.nodes]
+
 
 class Link:
     """Link in a Network, connecting two source and destination Nodes
