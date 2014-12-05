@@ -18,6 +18,7 @@ class Adversary:
         self.curator = curator
         self.eta = eta
         self.network = Network(size=self.curator.network.size)
+        self.network.make_all_links()
         self.preference_combinations = self.network.get_all_preferences()
         self.preference_index = 0
 

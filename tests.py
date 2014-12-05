@@ -7,20 +7,19 @@ from matplotlib import pyplot
 def test_adversary():
     cutoff_fractions = (0.5,)
     preference_count = 1
-    query_counts = (1000, 10000, 100000)
+    query_counts = (1e3, 1e4, 1e5)
     sequence_length = 4
 
     curator = Curator()
     curator.network = Network()
     curator.network.make_random_links()
     adversary = Adversary(curator)
-    adversary.network.make_all_links()
     preferences = tuple(curator.network.get_random_preferences() for _ in range(preference_count))
 
     errors = {cutoff_fraction: {preference: [] for preference in preferences}
               for cutoff_fraction in cutoff_fractions}
     for query_count in query_counts:
-        adversary.pirate(sequence_length, query_count)
+        adversary.pirate(sequence_length, int(query_count))
         for preference in preferences:
             adversary_probabilities = sorted(adversary.network.sequence_probabilities(preference,
                                                                                       sequence_length,
