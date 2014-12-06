@@ -10,7 +10,8 @@ Formulation
 -----------
 
 We have structured our model as the canonical privacy problem, with a curator
-that protects a database from an adversary.
+that protects a database from an adversary capable of making repeated query
+attacks in attempt to reconstruct the database.
 
 The Database
 ------------
