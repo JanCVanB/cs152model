@@ -5,56 +5,74 @@ from matplotlib import pyplot
 import numpy as np
 
 
-def test_adversary():
+def kl_divergence(distribution, approx_distribution):
+    """Calculate the KL divergence for two distributions
 
+    :param distribution: original proabability distribution
+    :param approx_distribution: approximate of the original distribution
+    """
+    return tuple(np.sum(distribution) * np.log(np.array(distribution) / np.array(approx_distribution)))
+
+
+def test_adversary():
     # Network parameters
     size = 10
     interactivity = 2
     sequence_length = 4
 
     # Testing parameters
-    cutoff_fractions = (0.5,)
-    preference_count = 1
-    query_counts = (1e3, 1e4, 1e5)
-    KL_divergences = []
+    cutoff_fractions = (0.1, 0.5)
+    preference_count = 5
+    query_counts = tuple(np.logspace(0, 3.5, num=20))
 
     curator = Curator()
-    curator.network = Network(size=size, interactivity=interactivity)
+    curator.network = Network(size, interactivity)
     curator.network.make_random_links()
     adversary = Adversary(curator)
     preferences = tuple(curator.network.get_random_preferences() for _ in range(preference_count))
 
     errors = {cutoff_fraction: {preference: [] for preference in preferences}
               for cutoff_fraction in cutoff_fractions}
+    kl_divergences = {preference: [] for preference in preferences}
     for query_count in query_counts:
+        print
         adversary.pirate(sequence_length, number_of_queries=int(query_count))
         for preference in preferences:
-            adversary_probabilities = sorted(adversary.network.sequence_probabilities(preference,
-                                                                                      sequence_length,
-                                                                                      Adversary.normalize),
-                                             reverse=True)
-            curator_probabilities = sorted(curator.network.sequence_probabilities(preference,
-                                                                                  sequence_length,
-                                                                                  curator.exponential_mechanism),
-                                           reverse=True)
+            print 'Preference %d' % (preferences.index(preference) + 1)
+            adversary_probabilities = adversary.network.sequence_probabilities(preference,
+                                                                               sequence_length,
+                                                                               Adversary.normalize)
+            curator_probabilities = curator.network.sequence_probabilities(preference,
+                                                                           sequence_length,
+                                                                           curator.exponential_mechanism)
             for cutoff_fraction in cutoff_fractions:
                 cutoff_number = int(cutoff_fraction * len(curator_probabilities))
-                adversary_subset = adversary_probabilities[:cutoff_number]
-                curator_subset = curator_probabilities[:cutoff_number]
-                error_count = sum(x not in adversary_subset for x in curator_subset)
+                error_count = (sum(adversary_probabilities[i] not in sorted(adversary_probabilities)[:cutoff_number]
+                               for i in range(len(curator_probabilities[:cutoff_number]))))
                 errors[cutoff_fraction][preference].append(1.0 * error_count / cutoff_number)
 
-        # Current KL Divergence after a query
-        current_KL = KL_divergence(np.asarray(curator_probabilities), np.asarray(adversary_probabilities))
-        KL_divergences.append(current_KL)
+            # KL Divergence after a preference query
+            kl_divergences[preference].append(kl_divergence(curator_probabilities, adversary_probabilities))
 
-    print errors
+    figure, (axes_error, axes_kl) = pyplot.subplots(1, 2)
+    figure.canvas.set_window_title('Top Sequences Error and KL Divergence vs. Number of Queries')
+    axes_error.set_title('Top Sequences Error vs. Number of Queries')
+    axes_error.set_xlabel('Number of Queries')
+    axes_error.set_xscale('log')
+    axes_error.set_ylabel('Top Sequences Error')
+    axes_kl.set_title('KL Divergence vs. Number of Queries')
+    axes_kl.set_xlabel('Number of Queries')
+    axes_kl.set_xscale('log')
+    axes_kl.set_ylabel('KL Divergence')
     for cutoff_fraction in cutoff_fractions:
-        for preference in preferences:
-            pyplot.plot(range(len(errors[cutoff_fraction][preference])),
-                        errors[cutoff_fraction][preference],
-                        label=str(cutoff_fraction) + ' ' + str(preference))
-    pyplot.legend()
+        axes_error.plot([sum(query_counts[:i]) for i in range(1, len(query_counts) + 1)],
+                        [np.mean([errors[cutoff_fraction][preference][i] for preference in preferences])
+                         for i in range(len(query_counts))],
+                        label='Top %.2g%%' % (100 * cutoff_fraction))
+    axes_error.legend(loc='best')
+    axes_kl.plot([sum(query_counts[:i]) for i in range(1, len(query_counts) + 1)],
+                 [np.mean([kl_divergences[preference][i] for preference in preferences])
+                  for i in range(len(query_counts))])
     pyplot.show()
 
 
@@ -123,11 +141,7 @@ def test_network():
     sequence_axes.legend()
     pyplot.show()
 
-def KL_divergence(distribution, approx_distribution):
-    '''Calculates the KL divergence for two distributions'''
-    return np.sum(distribution * np.log(distribution / approx_distribution))
-
 
 if __name__ == '__main__':
     test_adversary()
-    test_network()
+    # test_network()

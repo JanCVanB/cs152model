@@ -85,11 +85,11 @@ class Network:
         sequence_probabilities = [1.0 / len(self.nodes)] * len(sequences)
         progress_bar_size = 50
         progress_step = 2
-        print '|' + ' ' * progress_bar_size + '|',
+        print 'Probabilities\t|' + ' ' * progress_bar_size + '|',
         for sequence_index in range(len(sequences)):
             if not sequence_index % (len(sequences) * progress_step / 100) and sequence_index:
                 progress_percent = int(100 * sequence_index / len(sequences))
-                print('\r|' + '-' * (progress_percent * progress_bar_size / 100) +
+                print('\rProbabilities\t|' + '-' * (progress_percent * progress_bar_size / 100) +
                       ' ' * ((100 - progress_percent) * progress_bar_size / 100) + '|'),
             for sequence_step in range(sequence_length - 1):
                 this_node = sequences[sequence_index][sequence_step]
@@ -104,7 +104,7 @@ class Network:
                 probabilities = probability_conversion(utilities)
                 step_probability = probabilities[self.nodes.index(next_node)]
                 sequence_probabilities[sequence_index] *= step_probability
-        print '\r|' + '-' * progress_bar_size + '|'
+        print '\rProbabilities\t|' + '-' * progress_bar_size + '|'
         assert sum(sequence_probabilities) < 1.0001
         assert sum(sequence_probabilities) > 0.9999
         return sequence_probabilities

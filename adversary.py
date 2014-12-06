@@ -37,7 +37,15 @@ class Adversary:
         :param int sequence_length: length of sequences to pirate
         :param int number_of_queries: number of times to query the curator
         """
+        progress_bar_size = 50
+        progress_bar_step = 2
+        print 'Pirating %d...' % number_of_queries, '|' + ' ' * progress_bar_size + '|',
         for query_number in range(number_of_queries):
+            if query_number and not query_number % (number_of_queries * progress_bar_step / 100.0):
+                progress_percent = int(100 * query_number / number_of_queries)
+                print('\rPirating %d\t|' % number_of_queries +
+                      '-' * int(progress_percent * progress_bar_size / 100.0) +
+                      ' ' * int((100 - progress_percent) * progress_bar_size / 100.0) + '|'),
             preferences = self.preference_combinations[self.preference_index]
             query_response = self.curator.query(sequence_length, preferences)
             sequence = [node for node in self.network.nodes for name in query_response
@@ -50,3 +58,4 @@ class Adversary:
                 link.utility *= exp(self.eta)
             self.preference_index += 1
             self.preference_index %= len(self.preference_combinations)
+        print '\rPirating %d\t|' % number_of_queries + '-' * progress_bar_size + '|'
